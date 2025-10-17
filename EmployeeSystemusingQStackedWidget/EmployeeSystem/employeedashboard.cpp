@@ -4,6 +4,9 @@
 #include<QString>
 #include<QTime>
 #include<QMessageBox>
+#include<QSqlDatabase>
+#include<QSqlError>
+#include<QSqlQuery>
 
 EmployeeDashboard::EmployeeDashboard(QWidget *parent)
     : QMainWindow(parent)
@@ -39,10 +42,9 @@ EmployeeDashboard::~EmployeeDashboard()
 void EmployeeDashboard::addEmployee()
 {
     QString id=ui->lineEdit_empid->text();
-    QString cname=ui->lineEdit_2Cname->text();
     QString ename=ui->lineEdit_3EName->text();
+    QString cname=ui->lineEdit_2Cname->text();
     QString post=ui->lineEdit_5Designation->text();
-
     QDate jdate = ui->dateEdit->date();
     QString jdateStr = jdate.toString("yyyy-MM-dd");
 
@@ -54,6 +56,22 @@ void EmployeeDashboard::addEmployee()
     if(!ui->tableWidget->findItems(id, Qt::MatchExactly).isEmpty()){
         QMessageBox::warning(this, "Input error","EMployee id already exists");
         return;
+    }
+
+    QSqlQuery query;
+    query.prepare("INSERT INTO empdashboard(empid, empname, companyname , designation, joiningDate) VALUES(:empid, :empname,:companyname, :designation , :joiningDate)");
+    query.bindValue(":empid",id);
+    query.bindValue(":empname",ename);
+    query.bindValue(":companyname",cname);
+    query.bindValue(":designation",post);
+    query.bindValue(":joiningDate",jdate);
+
+
+    if(query.exec()){
+        QMessageBox::information(this,"success","data stored");
+    }
+    else{
+        qDebug()<<"not stored"<<query.lastError().text();
     }
 
     int row=ui->tableWidget->rowCount();
